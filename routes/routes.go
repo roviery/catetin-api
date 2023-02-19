@@ -7,6 +7,10 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
+	pdfController "github.com/roviery/catetin-api/app/pdf/controller"
+	pdfRepository "github.com/roviery/catetin-api/app/pdf/repository"
+	pdfUsecase "github.com/roviery/catetin-api/app/pdf/usecase"
+
 	deadlineController "github.com/roviery/catetin-api/app/deadlines/controller"
 	deadlineRepo "github.com/roviery/catetin-api/app/deadlines/repository"
 	deadlineUsecase "github.com/roviery/catetin-api/app/deadlines/usecase"
@@ -75,6 +79,10 @@ func Init() *echo.Echo {
 	todoUsecase := todoUsecase.NewTodoUsecase(todoRepo)
 	todoHandler := todoController.NewTodoHandler(todoUsecase)
 
+	pdfRepo := pdfRepository.NewPDFRepo(c)
+	pdfUsecase := pdfUsecase.NewPDFUsecase(pdfRepo)
+	pdfHandler := pdfController.NewPDFHandler(pdfUsecase)
+
 	r := e.Group("/api/v1")
 	r.POST("/user/register", userHandler.Register)
 	r.POST("/user/login", userHandler.Login)
@@ -109,6 +117,9 @@ func Init() *echo.Echo {
 	r.GET("/todos", todoHandler.GetTodos, middlewareJWTAuth)
 	r.PUT("/todo/:id", todoHandler.Update, middlewareJWTAuth)
 	r.DELETE("/todo/:id", todoHandler.Delete, middlewareJWTAuth)
+
+	r.POST("/upload", pdfHandler.Upload)
+	r.GET("/download/:id", pdfHandler.Download)
 
 	return e
 }

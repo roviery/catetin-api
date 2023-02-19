@@ -14,6 +14,7 @@ const (
 	CollectionFinances     = "finances"
 	CollectionTransactions = "transactions"
 	CollectionTodos        = "todos"
+	CollectionPDF          = "pdf"
 )
 
 var JWTExpiredTime = time.Duration(1) * time.Hour
