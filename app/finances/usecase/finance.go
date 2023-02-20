@@ -66,6 +66,8 @@ func (f *financeUsecase) GetFinances(ctx context.Context, ownerId *primitive.Obj
 			ID:             finance.ID,
 			Type:           finance.Type,
 			FundAllocation: finance.FundAllocation,
+			Used:           finance.Used,
+			Remaining:      finance.Remaining,
 		})
 	}
 
