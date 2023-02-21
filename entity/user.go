@@ -1,7 +1,5 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -18,5 +16,5 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	UserID primitive.ObjectID `json:"user_id"`
+	UserID string `json:"user_id"`
 }

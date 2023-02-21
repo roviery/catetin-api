@@ -2,51 +2,66 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
+	"math/rand"
 	"time"
 
-	"github.com/roviery/catetin-api/constant"
 	"github.com/roviery/catetin-api/domain"
 	"github.com/roviery/catetin-api/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type userRepo struct {
-	mgo *mongo.Client
+	sql *sql.DB
 }
 
-func NewUserRepo(mgo *mongo.Client) domain.UserRepository {
+func NewUserRepo(sql *sql.DB) domain.UserRepository {
 	return &userRepo{
-		mgo: mgo,
+		sql: sql,
 	}
 }
 
 func (u *userRepo) FindByEmail(ctx context.Context, email string) (*models.User, error) {
-	var user models.User
-
-	collection := u.mgo.Database(constant.MongoDatabaseName).Collection(constant.CollectionUsers)
-
-	err := collection.FindOne(ctx, bson.M{
-		"email": email,
-	}).Decode(&user)
-
+	query := "SELECT id, email FROM user WHERE email = ?"
+	row, err := u.sql.Query(query, email)
 	if err != nil {
 		return nil, err
 	}
+	defer row.Close()
 
-	return &user, nil
+	var user models.User
+	if row.Next() {
+		err := row.Scan(&user.ID, &user.Email)
+		if err != nil {
+			return nil, err
+		}
+		return &user, nil
+	}
+
+	fmt.Print(user)
+	return nil, nil
 }
 
 func (u *userRepo) Store(ctx context.Context, user *models.User) (*models.User, error) {
-	collection := u.mgo.Database(constant.MongoDatabaseName).Collection(constant.CollectionUsers)
-
-	user.ID = primitive.NewObjectID()
+	query := "INSERT INTO user(fullname, email, password, created_at) VALUES (?,?,?,?)"
+	user.ID = randomString(10)
 	user.CreatedAt = time.Now().Format(time.RFC1123)
-	_, err := collection.InsertOne(ctx, user)
+	_, err := u.sql.Query(query, user.Fullname, user.Email, user.Password, user.CreatedAt)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	return user, nil
+}
+
+func randomString(n int) string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	rand.Seed(time.Now().UnixNano())
+
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }

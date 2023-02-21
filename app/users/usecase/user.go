@@ -10,7 +10,6 @@ import (
 	"github.com/roviery/catetin-api/domain"
 	"github.com/roviery/catetin-api/entity"
 	"github.com/roviery/catetin-api/models"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -45,11 +44,6 @@ func (u *userUsecase) Login(ctx context.Context, req entity.LoginRequest) (*enti
 }
 
 func (u *userUsecase) Register(ctx context.Context, req entity.RegisterRequest) (*entity.RegisterResponse, error) {
-	user, _ := u.userRepo.FindByEmail(ctx, req.Email)
-	if user != nil {
-		return nil, fmt.Errorf("email already registered")
-	}
-
 	passHash, err := hashPassword(req.Password)
 	if err != nil {
 		return nil, err
@@ -81,7 +75,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func createToken(userFullname string, userId primitive.ObjectID) (string, error) {
+func createToken(userFullname string, userId string) (string, error) {
 	claims := &entity.JWTCustomClaims{
 		Name: userFullname,
 		ID:   userId,
