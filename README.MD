@@ -28,7 +28,7 @@
 ### **Users**
 | Service | Method | URL Endpoint | Authorization | Request Body |
 | :--- | :--- | :--- | :--- | :--- |
-| Register | POST | /user/register | - | {fullname, email, password |
+| Register | POST | /user/register | - | fullname, email, password |
 | Login | POST | /user/login | Bearer Token | email, password |
 
 ### **Deadlines**

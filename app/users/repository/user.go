@@ -2,55 +2,43 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math/rand"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/roviery/catetin-api/domain"
 	"github.com/roviery/catetin-api/models"
 )
 
 type userRepo struct {
-	sql *sql.DB
+	db *gorm.DB
 }
 
-func NewUserRepo(sql *sql.DB) domain.UserRepository {
+func NewUserRepo(db *gorm.DB) domain.UserRepository {
 	return &userRepo{
-		sql: sql,
+		db: db,
 	}
 }
 
 func (u *userRepo) FindByEmail(ctx context.Context, email string) (*models.User, error) {
-	query := "SELECT id, email FROM user WHERE email = ?"
-	row, err := u.sql.Query(query, email)
+	var user models.User
+	err := u.db.Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
-	defer row.Close()
-
-	var user models.User
-	if row.Next() {
-		err := row.Scan(&user.ID, &user.Email)
-		if err != nil {
-			return nil, err
-		}
-		return &user, nil
-	}
 
 	fmt.Print(user)
-	return nil, nil
+	return &user, nil
 }
 
 func (u *userRepo) Store(ctx context.Context, user *models.User) (*models.User, error) {
-	query := "INSERT INTO user(fullname, email, password, created_at) VALUES (?,?,?,?)"
-	user.ID = randomString(10)
-	user.CreatedAt = time.Now().Format(time.RFC1123)
-	_, err := u.sql.Query(query, user.Fullname, user.Email, user.Password, user.CreatedAt)
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+	err := u.db.Create(user).Error
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
 	return user, nil
 }
 

@@ -22,9 +22,9 @@ func Init() *echo.Echo {
 		return c.String(http.StatusOK, "Welcome to CatetinAPI")
 	})
 
-	sqlDB := db.DB()
+	postgresDB := db.DB()
 
-	userRepo := userRepo.NewUserRepo(sqlDB)
+	userRepo := userRepo.NewUserRepo(postgresDB)
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
 	userHandler := userController.NewUserHandler(userUsecase)
 

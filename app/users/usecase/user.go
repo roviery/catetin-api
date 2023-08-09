@@ -33,7 +33,7 @@ func (u *userUsecase) Login(ctx context.Context, req entity.LoginRequest) (*enti
 		return nil, fmt.Errorf("invalid password")
 	}
 
-	t, err := createToken(user.Fullname, user.ID)
+	t, err := createToken(user.Fullname, user.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,8 @@ func (u *userUsecase) Register(ctx context.Context, req entity.RegisterRequest) 
 	}
 
 	return &entity.RegisterResponse{
-		UserID: res.ID,
+		Email:    res.Email,
+		Fullname: res.Fullname,
 	}, nil
 }
 

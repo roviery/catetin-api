@@ -1,13 +1,14 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
+	"github.com/roviery/catetin-api/models"
 )
 
 func init() {
@@ -31,14 +32,15 @@ func (i *DBInstance) Instance() interface{} {
 
 func dbInit() interface{} {
 	dbHost := "localhost"
-	dbPort := "3306"
-	dbUser := "root"
-	dbPass := ""
+	dbPort := "5432"
+	dbUser := "admin"
+	dbPass := "admin"
 	dbName := "catetin"
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
+	conn := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable",
+		dbUser, dbPass, dbHost, dbPort, dbName)
 
-	db, err := sql.Open("mysql", dsn)
+	db, err := gorm.Open("postgres", conn)
 
 	if err != nil {
 		log.Default().Println(err)
@@ -46,11 +48,11 @@ func dbInit() interface{} {
 		db.Close()
 	}
 
-	db.SetMaxIdleConns(8)
+	db.AutoMigrate(&models.User{})
 
 	return db
 }
 
-func DB() *sql.DB {
-	return dbInstance.Instance().(*sql.DB)
+func DB() *gorm.DB {
+	return dbInstance.Instance().(*gorm.DB)
 }
